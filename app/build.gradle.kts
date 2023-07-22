@@ -3,7 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("upload-tg-plugin")
 }
-
+uploadConfig {
+    validateApkSizeEnabled = true
+    maxApkSizeMb = 150
+}
 android {
     namespace = "ru.yandex.shmr"
     compileSdk = 33
@@ -30,6 +33,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    defaultConfig {
+        versionCode = 1
+        versionName = "1.0.0"
     }
 }
 

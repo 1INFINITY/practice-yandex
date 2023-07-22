@@ -1,12 +1,12 @@
 package ru.yandex.shmr
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -18,6 +18,12 @@ abstract class ValidateApkSize : DefaultTask() {
 
     @get:OutputFile
     abstract val totalSizeFile: RegularFileProperty
+
+    @get:Input
+    abstract val validateEnabled: Property<Boolean>
+
+    @get:Input
+    abstract val maxApkSizeMb: Property<Int>
 
     init {
         totalSizeFile.convention(project.layout.buildDirectory.file("total-size-file.txt"))
@@ -32,15 +38,16 @@ abstract class ValidateApkSize : DefaultTask() {
                     ?.reduce { sum, apkSize -> sum + apkSize }
                     ?: throw GradleException("APK files not found!")
 
-            val totalMb = totalBytes / (1024 * 1024)
+            val totalMb = totalBytes / bytesInMegabyte
 
-            if(totalMb > validSizeMb)
+            if(totalMb > maxApkSizeMb.get() && validateEnabled.get())
                 throw GradleException("APK size is not valid. Aborting task.")
 
             totalSizeFile.get().asFile.writeText(totalMb.toString())
         }
     }
     companion object {
-        const val validSizeMb = 100
+        const val defaultValidSizeMb = 100
+        const val bytesInMegabyte = 1024 * 1024
     }
 }

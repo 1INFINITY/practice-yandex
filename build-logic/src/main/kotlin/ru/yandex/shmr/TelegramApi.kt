@@ -17,7 +17,7 @@ class TelegramApi(
     private val httpClient: HttpClient
 ) {
 
-    suspend fun uploadFile(file: File, token: String, chatId: String) {
+    suspend fun uploadFile(file: File, fileName: String, token: String, chatId: String) {
         val response = httpClient.post("$BASE_URL/bot${token}/sendDocument") {
             parameter("chat_id", chatId)
             setBody(
@@ -26,7 +26,7 @@ class TelegramApi(
                         append("document", file.readBytes(), Headers.build {
                             append(
                                 HttpHeaders.ContentDisposition,
-                                "${ContentDisposition.Parameters.FileName}=\"${file.name}\""
+                                "${ContentDisposition.Parameters.FileName}=\"${fileName}\""
                             )
                         })
                     }
