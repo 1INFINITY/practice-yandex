@@ -5,6 +5,9 @@ import com.android.build.api.variant.AndroidComponentsExtension
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Provider
+import java.io.File
 
 class UploadPlugin : Plugin<Project> {
 
@@ -16,7 +19,15 @@ class UploadPlugin : Plugin<Project> {
     androidComponents.onVariants { variant ->
       val capVariantName = variant.name.capitalize()
       val apkDit = variant.artifacts.get(SingleArtifact.APK)
+
+
+      val validateTask = project.tasks.register("validateApkSizeFor$capVariantName", ValidateApkSize::class.java) {
+        apkDir.set(apkDit)
+      }
+
       project.tasks.register("uploadApkFor$capVariantName", UploadTask::class.java) {
+        dependsOn("validateApkSizeFor$capVariantName")
+        totalSizeFile.set(validateTask.get().totalSizeFile)
         apkDir.set(apkDit)
       }
     }
